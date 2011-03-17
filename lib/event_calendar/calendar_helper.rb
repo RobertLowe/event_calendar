@@ -166,9 +166,19 @@ module EventCalendar
         cal << %(<table class="ec-row-bg" cellpadding="0" cellspacing="0">)
         cal << %(<tbody><tr>)
         first_day_of_week.upto(first_day_of_week+6) do |day|
-          today_class = (day == Date.today) ? "ec-today-bg" : ""
+          
+          if day.to_date == Date.today
+            past_present_or_future = 'ec-today-bg'
+          else
+            if day.to_date - Date.today > 0
+              past_present_or_future = 'ec-future-bg'
+            else
+              past_present_or_future = 'ec-past-bg'
+            end
+          end
+
           other_month_class = (day < first) || (day > last) ? 'ec-other-month-bg' : ''
-          cal << %(<td class="ec-day-bg #{today_class} #{other_month_class}">&nbsp;</td>)
+          cal << %(<td class="ec-day-bg #{past_present_or_future} #{other_month_class}">&nbsp;</td>)
         end
         cal << %(</tr></tbody></table>)
 
@@ -201,6 +211,17 @@ module EventCalendar
           strip[row_num*7, 7].each_with_index do |event, index|
             day = first_day_of_week + index
 
+            if day.to_date == Date.today
+              past_present_or_future = 'ec-event-today'
+            else
+              if day.to_date - Date.today > 0
+                past_present_or_future = 'ec-event-today'
+              else
+                past_present_or_future = 'ec-event-today'
+              end
+            end
+
+
             if event
               # get the dates of this event that fit into this week
               dates = event.clip_range(first_day_of_week, last_day_of_week)
@@ -211,7 +232,7 @@ module EventCalendar
                 no_bg = no_event_bg?(event, options)
                 class_name = event.class.name.tableize.singularize
 
-                cal << %(<td class="ec-event-cell" colspan="#{(dates[1]-dates[0]).to_i + 1}" )
+                cal << %(<td class="ec-event-cell #{past_present_or_future}" colspan="#{(dates[1]-dates[0]).to_i + 1}" )
                 cal << %(style="padding-top: #{options[:event_margin]}px;">)
                 cal << %(<div class="ec-event #{class_name} ec-#{class_name}-#{event.id} )
                 if no_bg
@@ -259,7 +280,7 @@ module EventCalendar
 
             else
               # there wasn't an event, so create an empty cell and container
-              cal << %(<td class="ec-event-cell ec-no-event-cell" )
+              cal << %(<td class="ec-event-cell ec-no-event-cell #{past_present_or_future}" )
               cal << %(style="padding-top: #{options[:event_margin]}px;">)
               cal << %(<div class="ec-event" )
               cal << %(style="padding-top: #{options[:event_padding_top]}px; )
